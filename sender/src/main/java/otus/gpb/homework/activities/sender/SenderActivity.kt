@@ -1,7 +1,6 @@
 package otus.gpb.homework.activities.sender
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -23,7 +22,6 @@ import java.nio.charset.StandardCharsets
 
 class SenderActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    @SuppressLint("QueryPermissionsNeeded")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -70,6 +68,14 @@ class SenderActivity : AppCompatActivity() {
                             }
                         }
                     }
+            } else {
+                val latitude = 0
+                val longitude = 0
+                val query = URLEncoder.encode("рестораны", StandardCharsets.UTF_8.toString())
+                val gmmIntentUri = Uri.parse("geo:$latitude,$longitude?q=$query")
+                Toast.makeText(this, "Google Maps нет прав получить геопозицию", Toast.LENGTH_SHORT).show()
+                val mapIntent3 = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                startActivity(mapIntent3)
             }
         }
 
