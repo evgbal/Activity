@@ -63,8 +63,8 @@ class SenderActivity : AppCompatActivity() {
                                 startActivity(mapIntent)
                             } else {
                                 Toast.makeText(this, "Google Maps не установлено", Toast.LENGTH_SHORT).show()
-                                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                                startActivity(mapIntent)
+                                val mapIntent2 = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                                startActivity(mapIntent2)
                             }
                         }
                     }
@@ -75,7 +75,7 @@ class SenderActivity : AppCompatActivity() {
         sendMail.setOnClickListener {
             Toast.makeText(this, "Send Mail", Toast.LENGTH_SHORT).show()
             val email = "android@otus.ru"
-            val subject = "Тест из зажания activity_02";
+            val subject = "Тест из зажания activity_02"
             val text = "Добрый день! Это содержание письма, отправленного из приложения activity_02."
 
             val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
@@ -91,7 +91,7 @@ class SenderActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Не найдено приложение для отправки email протоколом mailto:", Toast.LENGTH_SHORT).show()
 
-                val emailIntent = Intent(Intent.ACTION_SEND).apply {
+                val emailIntent2 = Intent(Intent.ACTION_SEND).apply {
                     type = "message/rfc822" // MIME-тип для email-клиентов
                     putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
                     putExtra(Intent.EXTRA_SUBJECT, subject)
@@ -99,7 +99,7 @@ class SenderActivity : AppCompatActivity() {
                 }
 
                 try {
-                    startActivity(Intent.createChooser(emailIntent, "Выберите email клиент"))
+                    startActivity(Intent.createChooser(emailIntent2, "Выберите email клиент"))
                 } catch (e: ActivityNotFoundException) {
                     Toast.makeText(this, "Нет доступных почтовых приложений", Toast.LENGTH_SHORT).show()
                 }
@@ -127,19 +127,19 @@ class SenderActivity : AppCompatActivity() {
                 putExtra("description", payload.description)
                 setPackage("otus.gpb.homework.activities.receiver")
             }
-            // Проверяем, что Google Maps установлено на устройстве
+            // Проверяем, что Receiver установлен на устройстве
             if (intent.resolveActivity(packageManager) != null) {
                 startActivity(intent)
             } else {
                 Toast.makeText(this, "Receiver не установлен", Toast.LENGTH_SHORT).show()
-                val intent = Intent(Intent.ACTION_SEND).apply {
+                val intent2 = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     addCategory(Intent.CATEGORY_DEFAULT)
                     putExtra("title", payload.title)
                     putExtra("year", payload.year)
                     putExtra("description", payload.description)
                 }
-                startActivity(intent)
+                startActivity(intent2)
             }
         }
     }
