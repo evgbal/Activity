@@ -124,9 +124,10 @@ class EditProfileActivity : AppCompatActivity() {
         val imageFile = File(imagePath.path, "test.jpg")
         // get the Bitmap of the drawable to show
 
-        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
+
         // write in the file the drawable image
         try {
+            val bitmap = (imageView.drawable as BitmapDrawable).bitmap
             val fos = FileOutputStream(imageFile)
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
             fos.flush()
