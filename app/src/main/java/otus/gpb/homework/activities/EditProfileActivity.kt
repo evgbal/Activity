@@ -1,22 +1,28 @@
 package otus.gpb.homework.activities
 
+import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.Settings
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import android.Manifest
-import android.app.Activity
-import android.widget.Button
-import android.widget.TextView
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileOutputStream
 
 
 class EditProfileActivity : AppCompatActivity() {
@@ -77,7 +83,11 @@ class EditProfileActivity : AppCompatActivity() {
 
         // Обработчик нажатия кнопки "Редактировать профиль"
         editProfileButton.setOnClickListener {
-            val intent = Intent(this, FillFormActivity::class.java)
+            val intent = Intent(this, FillFormActivity::class.java).apply {
+                putExtra("firstName", textViewFirstName.text)    // Предустановленное имя
+                putExtra("lastName", textViewLastName.text)   // Предустановленная фамилия
+                putExtra("age", textViewAge.text)            // Предустановленный возраст
+            }
             fillFormResultLauncher.launch(intent)
         }
     }
@@ -92,7 +102,9 @@ class EditProfileActivity : AppCompatActivity() {
 
     // Регистрация контракта для получения изображения из галереи
     private val galleryPickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let { populateImage(it) }
+        uri?.let {
+            populateImage(it)
+        }
     }
 
     // Метод для выбора фото из галереи
@@ -101,15 +113,41 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun openSenderApp() {
+
         // Добавляем URI изображения, если доступно
-        val imageUri: Uri = Uri.parse("android.resource://${packageName}/${R.drawable.cat}") // Пример URI изображения
+        // use the dedicated external directory so the App doesn't need to ask for permission in manifest
+        val dirSaveFile = applicationContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        // create needed dirs for file path
+        val imagePath = File(dirSaveFile, "external_files")
+        imagePath.mkdir()
+        // create empty file
+        val imageFile = File(imagePath.path, "test.jpg")
+        // get the Bitmap of the drawable to show
+
+        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
+        // write in the file the drawable image
+        try {
+            val fos = FileOutputStream(imageFile)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            fos.flush()
+            fos.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+
+        // create the uri
+        val imageUri = FileProvider.getUriForFile(this, "otus.gpb.homework.activities.fileprovider", imageFile)
+
+
         val telegramIntent = Intent(Intent.ACTION_SEND).apply {
             type = "image/*" // указываем, что отправляем изображение
             setPackage("org.telegram.messenger") // явно указываем Telegram
             putExtra(Intent.EXTRA_TEXT, "Имя: ${textViewFirstName.text}, Фамилия: ${textViewLastName.text}, Возраст: ${textViewAge.text}")
-
             // Предполагаем, что картинка добавлена через URI из галереи
             putExtra(Intent.EXTRA_STREAM, imageUri)
+            // Разрешаем передавать URI
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
         if (telegramIntent.resolveActivity(packageManager) != null) {
@@ -118,16 +156,13 @@ class EditProfileActivity : AppCompatActivity() {
             // Создаем неявный интент с действием SEND
             val sendIntent = Intent().apply {
                 action = Intent.ACTION_SEND
-                type = "image/*"  // MIME-тип указывает на отправку изображения
+                type = "text/plain"  // MIME-тип указывает на отправку
+                // Добавляем данные профиля в качестве параметров
+                putExtra(Intent.EXTRA_TEXT, "Вот информация моего профиля!")  // Текст для отправки
+                putExtra(Intent.EXTRA_SUBJECT, "Детали профиля")  // Тема сообщения
+                putExtra(Intent.EXTRA_STREAM, imageUri) // Передаем изображение// Разрешаем передавать URI
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-
-            // Добавляем данные профиля в качестве параметров
-            sendIntent.putExtra(Intent.EXTRA_TEXT, "Вот информация моего профиля!")  // Текст для отправки
-            sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Детали профиля")  // Тема сообщения
-
-
-            sendIntent.putExtra(Intent.EXTRA_STREAM, imageUri) // Передаем изображение
-
             // Запускаем выбор приложения для отправки
             val chooser = Intent.createChooser(sendIntent, "Поделиться профилем")
             startActivity(chooser)

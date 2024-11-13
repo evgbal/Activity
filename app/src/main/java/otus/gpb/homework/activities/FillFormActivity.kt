@@ -32,6 +32,11 @@ class FillFormActivity : AppCompatActivity() {
         ageEditText = findViewById(R.id.editTextAge)
         applyButton = findViewById(R.id.buttonApply)
 
+        // Получение переданных значений и установка в EditText
+        firstNameEditText.setText(intent.getStringExtra("firstName") ?: "")
+        lastNameEditText.setText(intent.getStringExtra("lastName") ?: "")
+        ageEditText.setText(intent.getStringExtra("age") ?: "")
+
         // Обработчик нажатия кнопки "Применить"
         applyButton.setOnClickListener {
             val resultIntent = Intent().apply {
